@@ -1,6 +1,8 @@
 import type { NextAuthConfig } from "next-auth";
 import { NextResponse } from "next/server";
 
+const baseUrl = process.env.AUTH_URL;
+
 export const authConfig = {
   pages: {
     signIn: "/login",
@@ -16,7 +18,10 @@ export const authConfig = {
         return false; // Redirect unauthenticated users to login page
       } else if (isLoggedIn && isOnLogin) {
         // Redirect logged-in users away from login page to dashboard
-        return NextResponse.redirect(new URL("/dashboard", nextUrl));
+        const redirectUrl = baseUrl
+          ? new URL("/dashboard", baseUrl)
+          : new URL("/dashboard", nextUrl);
+        return NextResponse.redirect(redirectUrl);
       }
       return true;
     },

@@ -20,6 +20,7 @@ async function getUser(email: string): Promise<User | undefined> {
 
 export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  trustHost: true, // Trust the host header (useful for production behind proxies)
   providers: [
     Credentials({
       async authorize(credentials) {
