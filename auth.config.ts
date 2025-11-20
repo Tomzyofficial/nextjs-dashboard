@@ -16,12 +16,15 @@ function getBaseUrl(request: {
         : authUrl.trim();
       // Validate it's a proper URL
       if (cleanUrl.startsWith("http://") || cleanUrl.startsWith("https://")) {
+        console.log("[AUTH] Using AUTH_URL:", cleanUrl);
         return cleanUrl;
       }
+    } else {
+      console.log("[AUTH] AUTH_URL is not set or empty");
     }
   } catch (e) {
     // Environment variable might not be accessible in edge runtime
-    console.warn("AUTH_URL not accessible:", e);
+    console.warn("[AUTH] AUTH_URL not accessible:", e);
   }
 
   // Fallback: use request headers to construct URL (for production)
@@ -34,6 +37,14 @@ function getBaseUrl(request: {
     request.headers.get("host") ||
     request.nextUrl.host;
 
+  console.log("[AUTH] Headers - protocol:", protocol, "host:", host);
+  console.log("[AUTH] nextUrl.host:", request.nextUrl.host);
+  console.log(
+    "[AUTH] x-forwarded-host:",
+    request.headers.get("x-forwarded-host")
+  );
+  console.log("[AUTH] host header:", request.headers.get("host"));
+
   // Only use request headers if we're not on localhost (production)
   if (
     host &&
@@ -42,9 +53,11 @@ function getBaseUrl(request: {
     !host.includes("::1")
   ) {
     const url = `${protocol}://${host}`;
+    console.log("[AUTH] Using header-based URL:", url);
     return url;
   }
 
+  console.log("[AUTH] No valid base URL found, returning null");
   return null;
 }
 
@@ -60,6 +73,8 @@ export const authConfig = {
 
       // Get base URL from env var or request headers
       const baseUrl = getBaseUrl({ nextUrl, headers });
+      console.log("[AUTH] baseUrl result:", baseUrl);
+      console.log("[AUTH] nextUrl.toString():", nextUrl.toString());
 
       if (isOnDashboard) {
         if (isLoggedIn) return true;
@@ -71,6 +86,11 @@ export const authConfig = {
         const callbackUrl = baseUrl
           ? new URL(nextUrl.pathname + nextUrl.search, baseUrl).toString()
           : nextUrl.toString();
+        console.log(
+          "[AUTH] Redirecting to login with callbackUrl:",
+          callbackUrl
+        );
+        console.log("[AUTH] Final loginUrl:", loginUrl.toString());
         loginUrl.searchParams.set("callbackUrl", callbackUrl);
         return NextResponse.redirect(loginUrl);
       } else if (isLoggedIn && isOnLogin) {
