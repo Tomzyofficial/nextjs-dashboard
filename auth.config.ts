@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
+import { NextResponse } from "next/server";
 
 export const authConfig = {
   pages: {
@@ -15,7 +16,7 @@ export const authConfig = {
         return false; // Redirect unauthenticated users to login page
       } else if (isLoggedIn && isOnLogin) {
         // Redirect logged-in users away from login page to dashboard
-        return "/dashboard";
+        return NextResponse.redirect(new URL("/dashboard", nextUrl));
       }
       return true;
     },
