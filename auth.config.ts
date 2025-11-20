@@ -15,7 +15,16 @@ export const authConfig = {
 
       if (isOnDashboard) {
         if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
+        // Redirect unauthenticated users to login page with production URL
+        const loginUrl = baseUrl
+          ? new URL("/login", baseUrl)
+          : new URL("/login", nextUrl);
+        // Construct the callbackUrl using production URL
+        const callbackUrl = baseUrl
+          ? new URL(nextUrl.pathname + nextUrl.search, baseUrl).toString()
+          : nextUrl.toString();
+        loginUrl.searchParams.set("callbackUrl", callbackUrl);
+        return NextResponse.redirect(loginUrl);
       } else if (isLoggedIn && isOnLogin) {
         // Redirect logged-in users away from login page to dashboard
         const redirectUrl = baseUrl
